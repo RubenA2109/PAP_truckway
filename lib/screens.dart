@@ -136,7 +136,15 @@ class MapaScreen extends StatelessWidget {
           child: Box(
             color: kNavy,
             child: Row(children: [
-              const Icon(Icons.local_shipping_outlined, color: kOrange, size: 32),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
+                ),
+              ),
               const SizedBox(width: 12),
               const Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -470,7 +478,7 @@ class App {
   }
 }
 
-// ---------- Login / Registo (Supabase Auth + login_historico) ----------
+// ---------- Login / Registo (Visual renovado + Supabase Auth + login_historico) ----------
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
   @override
@@ -483,6 +491,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _pass = TextEditingController();
   bool _registo = false;
   bool _aCarregar = false;
+  bool _esconderPass = true;
   String? _erro;
 
   @override
@@ -492,6 +501,14 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_supabase.auth.currentUser != null) {
       App.carregarDadosBD();
     }
+  }
+
+  @override
+  void dispose() {
+    _nome.dispose();
+    _email.dispose();
+    _pass.dispose();
+    super.dispose();
   }
 
   Future<void> _entrar() async {
@@ -546,54 +563,218 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Widget _f(String label, TextEditingController c, {bool pass = false}) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
+  Widget _f(String label, TextEditingController c, {bool pass = false, IconData? icon}) => Padding(
+        padding: const EdgeInsets.only(bottom: 14),
         child: TextField(
           controller: c,
-          obscureText: pass,
-          decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+          obscureText: pass ? _esconderPass : false,
+          keyboardType: pass ? TextInputType.visiblePassword : TextInputType.emailAddress,
+          decoration: InputDecoration(
+            labelText: label,
+            prefixIcon: icon != null ? Icon(icon, color: kNavy.withValues(alpha: 0.7)) : null,
+            filled: true,
+            fillColor: kBg,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: kOrange, width: 2),
+            ),
+            suffixIcon: pass
+                ? IconButton(
+                    icon: Icon(_esconderPass ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    onPressed: () => setState(() => _esconderPass = !_esconderPass),
+                  )
+                : null,
+          ),
         ),
       );
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: kNavy,
-        body: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(children: [
-              const Icon(Icons.local_shipping, color: kOrange, size: 64),
-              const Text('TRUCKWAY', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 24),
-              Box(
-                pad: const EdgeInsets.all(20),
-                child: Column(children: [
-                  if (_registo) _f('Nome', _nome),
-                  _f('Email', _email),
-                  _f('Password', _pass, pass: true),
-                  if (_erro != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(_erro!, style: const TextStyle(color: kRed))),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: kOrange, foregroundColor: Colors.white),
-                      onPressed: _aCarregar ? null : _entrar,
-                      child: _aCarregar
-                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : Text(_registo ? 'CRIAR CONTA' : 'ENTRAR', style: const TextStyle(fontWeight: FontWeight.w900)),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Fundo com degradê moderno em tons azul-marinho
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [kNavy, Color(0xFF172A45), Color(0xFF09111E)],
+                ),
+              ),
+            ),
+            // Detalhe decorativo laranja no canto superior
+            Positioned(
+              top: -110,
+              right: -110,
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kOrange.withValues(alpha: 0.12),
+                ),
+              ),
+            ),
+            // Detalhe decorativo no canto inferior
+            Positioned(
+              bottom: -130,
+              left: -90,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kOrange.withValues(alpha: 0.07),
+                ),
+              ),
+            ),
+            // Conteúdo centrado e responsivo (tipo plataforma/site)
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Logótipo personalizado em destaque
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(22),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                blurRadius: 24,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.asset(
+                              'assets/logo.png',
+                              width: 96,
+                              height: 96,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const SizedBox(
+                                width: 96,
+                                height: 96,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'TRUCKWAY',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.6,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Planeamento de rotas e gabaritos para pesados',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white70, fontSize: 13.5),
+                        ),
+                        const SizedBox(height: 24),
+                        // Cartão do formulário
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.30),
+                                blurRadius: 28,
+                                offset: const Offset(0, 14),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                _registo ? 'Criar nova conta' : 'Iniciar sessão',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: kNavy,
+                                ),
+                              ),
+                              const SizedBox(height: 18),
+                              if (_registo) _f('Nome', _nome, icon: Icons.person_outline),
+                              _f('Email', _email, icon: Icons.email_outlined),
+                              _f('Password', _pass, pass: true, icon: Icons.lock_outline),
+                              if (_erro != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    _erro!,
+                                    style: const TextStyle(color: kRed, fontWeight: FontWeight.w600, fontSize: 13),
+                                  ),
+                                ),
+                              const SizedBox(height: 4),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: kOrange,
+                                    foregroundColor: Colors.white,
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                  onPressed: _aCarregar ? null : _entrar,
+                                  child: _aCarregar
+                                      ? const SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                        )
+                                      : Text(
+                                          _registo ? 'CRIAR CONTA' : 'ENTRAR',
+                                          style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextButton(
+                                style: TextButton.styleFrom(foregroundColor: kOrange),
+                                onPressed: () => setState(() {
+                                  _registo = !_registo;
+                                  _erro = null;
+                                }),
+                                child: Text(
+                                  _registo ? 'Já tenho conta' : 'Criar conta nova',
+                                  style: const TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _registo = !_registo;
-                      _erro = null;
-                    }),
-                    child: Text(_registo ? 'Já tenho conta' : 'Criar conta nova'),
-                  ),
-                ]),
+                ),
               ),
-            ]),
-          ),
+            ),
+          ],
         ),
       );
 }

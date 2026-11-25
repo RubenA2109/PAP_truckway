@@ -62,7 +62,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Adiciona esta parte para registar a tua imagem:
   assets:
     - assets/logo.png
 
